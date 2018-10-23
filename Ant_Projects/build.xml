@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Concatenate, Compress and FTP all CSS and JavaScript" default="initialize">
+
+	<target name="hello">
+		<echo> Wha'sup! </echo>
+	</target>
+
+	<target name="get_properties">
+		<property file="build.properties"/>
+		<echo>Imported Properties</echo>
+	</target>
+	
+	<target name="clean_up">
+		<delete dir="${output}"/>
+	</target>
+
+	<target name="initialize" depends="get_properties,clean_up">
+		<mkdir dir="${output}"/>
+		<antcall target="compress_css"/>
+		<antcall target="compress_js"/>
+		<antcall target="g_zip_assets"/>
+		<echo></echo>
+		<echo>_____|\_____\0/____</echo>
+		<echo></echo>
+		<echo>-------Done!-------</echo>
+		<echo></echo>
+	</target>
+	
+	<target name="concat_css">
+		<concat destfile="${output}/style.css">
+			<fileset id="css_files" dir="${input}">
+				<include name="**/*.css"/>
+			</fileset>
+		</concat>
+	</target>
+	
+	<target name="concat_js">
+		<concat destfile="${output}/script.js">
+			<fileset id="js_files" dir="${input}">
+				<include name="**/*.js"/>
+			</fileset>
+		</concat>
+	</target>
+	
+	<target name="compress_css" depends="concat_css">
+		<antcall target="compress">
+			<param name="type_of_file" value="css"/>
+			<param name="file" value="${output}/style.css"/>
+		</antcall>
+	</target>
+	
+	<target name="compress_js" depends="concat_js">
+		<antcall target="compress">
+			<param name="type_of_file" value="js"/>
+			<param name="file" value="${output}/script.js"/>
+		</antcall>
+	</target>
+	
+	<target name="compress">
+		<java jar="yuicompressor-2.4.8.jar" fork="true">
+			<arg value="-v"/>
+			<arg value="--line-break"/>
+			<arg value="4000"/>
+			<arg value="--type"/>
+			<arg value="${type_of_file}"/>
+			<arg value="${file}"/>
+			<arg value="-o"/>
+			<arg value="${file}"/>
+		</java>
+		<echo>${type_of_file}</echo>
+		<echo>${file}</echo>
+	</target>
+	
+	<target name="g_zip_assets">
+		<foreach target="g_zip_files" param="file_to_zip">
+			<fileset dir="${output}">
+			</fileset>
+		</foreach>
+	</target>
+	
+	<target name="g_zip_files">
+		<gzip src="${file_to_zip}" destfile="${output}"/>
+	</target>
+	
+</project>
